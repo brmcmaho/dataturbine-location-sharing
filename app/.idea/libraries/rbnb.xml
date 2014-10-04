@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="rbnb">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/app/libs/rbnb.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
