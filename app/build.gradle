@@ -22,4 +22,14 @@ android {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.google.android.gms:play-services:5.2.08'
+
+    compile 'com.jakewharton:butterknife:5.1.2'
+
+    compile 'de.greenrobot:eventbus:2.2.1'
 }
+
+
+//possibly needed for butterknife
+//packagingOptions {
+//    exclude 'META-INF/services/javax.annotation.processing.Processor'
+//}

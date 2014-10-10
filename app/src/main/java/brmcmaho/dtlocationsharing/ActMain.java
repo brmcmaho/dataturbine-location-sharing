@@ -5,12 +5,13 @@ import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 
 import com.rbnb.sapi.SAPIException;
 
 import org.actimo.activity.core.FeatureActivity;
 
+import butterknife.ButterKnife;
+import butterknife.OnClick;
 import edu.ucsd.rbnb.simple.MIME;
 import edu.ucsd.rbnb.simple.SimpleSource;
 
@@ -18,7 +19,7 @@ import edu.ucsd.rbnb.simple.SimpleSource;
 public class ActMain extends FeatureActivity  {
 
     private FragMain mViewFrag;
-    private FLocation mFLocation;
+    private FLocationServices mLocationServices;
 
     private SimpleSource src;
     private Context mContext;
@@ -30,36 +31,9 @@ public class ActMain extends FeatureActivity  {
         mContext = this;
 
 
-        mFLocation = new FLocation(new FLocationListener() {
+        mLocationServices = new FLocationServices() ;
 
-
-            @Override
-            public void stateMessage(int msg) {
-                mViewFrag.stateMessage(msg);
-            }
-
-            @Override
-            public void statusMessage(int msg) {
-                mViewFrag.statusMessage(msg);
-
-            }
-
-            @Override
-            public void locationUpdate(Location location) {
-                new SendLocationTask(mContext).execute(location); //TODO
-
-                mViewFrag.locationUpdate(location);
-            }
-
-            @Override
-            public void addressMessage(String address) {
-                mViewFrag.addressMessage(address);
-            }
-
-
-        });
-
-        addFeature(mFLocation);
+        addFeature(mLocationServices);
 
     }
 
@@ -72,6 +46,7 @@ public class ActMain extends FeatureActivity  {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.act_main);
+       // ButterKnife.inject(this);
 
         if (savedInstanceState == null) {
             getFragmentManager().beginTransaction()
@@ -82,23 +57,25 @@ public class ActMain extends FeatureActivity  {
         new ConnectToServerTask(this).execute();
     }
 
-//TODO onClick methods
-    public void getLocation(View v) {
-        mFLocation.getLocation();
 
+    @OnClick(R.id.get_location_button)
+    public void getLocation() {
+        mLocationServices.getLastLocation();
     }
 
-
-    public void getAddress(View v) {
-        mFLocation.getAddress();
+    @OnClick(R.id.get_address_button)
+    public void getAddress() {
+        mLocationServices.getAddress();
     }
 
-    public void startUpdates(View v) {
-        mFLocation.startUpdates();
+    @OnClick(R.id.start_updates_button)
+    public void startUpdates() {
+        mLocationServices.requestLocationUpdates();
     }
 
-    public void stopUpdates(View v) {
-        mFLocation.stopUpdates();
+    @OnClick(R.id.stop_updates_button)
+    public void stopUpdates() {
+        mLocationServices.removeLocationUpdates();
     }
 
 
