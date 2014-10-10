@@ -16,7 +16,7 @@ import butterknife.OnClick;
 import de.greenrobot.event.EventBus;
 
 
-public class FragMain extends Fragment {
+public class FragControls extends Fragment {
 
 
     // Handles to UI widgets
@@ -24,8 +24,6 @@ public class FragMain extends Fragment {
     TextView mLatLng;
     @InjectView(R.id.address)
     TextView mAddress;
-    @InjectView(R.id.text_connection_state)
-    TextView mConnectionState;
     @InjectView(R.id.text_connection_status)
     TextView mConnectionStatus;
 
@@ -34,7 +32,7 @@ public class FragMain extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.frag_main, container, false);
+        View view = inflater.inflate(R.layout.frag_controls, container, false);
 
         EventBus.getDefault().register(this);
         ButterKnife.inject(this, view);
@@ -80,7 +78,9 @@ public class FragMain extends Fragment {
 
     /*Event handling*/
     public void onEvent(LocationUpdateEvent event) {
-        mLatLng.setText(getLatLng(getActivity(), event.getLocation()));
+
+        String locString = event.getLocation().getLatitude() + ", " + event.getLocation().getLongitude();
+        mLatLng.setText(locString);
     }
 
     public void onEvent(AddressEvent event) {
@@ -93,33 +93,9 @@ public class FragMain extends Fragment {
 
 
 
-    public void stateMessage(int msg) {
-
-        mConnectionState.setText(msg);
-    }
 
 
-    public void statusMessage(int msg) {
 
-        mConnectionStatus.setText(msg);
-    }
-
-
-    public static String getLatLng(Context context, Location currentLocation) {
-        // If the location is valid
-        if (currentLocation != null) {
-
-            // Return the latitude and longitude as strings
-            return context.getString(
-                    R.string.latitude_longitude,
-                    currentLocation.getLatitude(),
-                    currentLocation.getLongitude());
-        } else {
-
-            // Otherwise, return the empty string
-            return "";
-        }
-    }
 
 
 }

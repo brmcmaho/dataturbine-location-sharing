@@ -10,7 +10,6 @@ import com.rbnb.sapi.SAPIException;
 
 import org.actimo.activity.core.FeatureActivity;
 
-import butterknife.ButterKnife;
 import butterknife.OnClick;
 import edu.ucsd.rbnb.simple.MIME;
 import edu.ucsd.rbnb.simple.SimpleSource;
@@ -18,23 +17,16 @@ import edu.ucsd.rbnb.simple.SimpleSource;
 
 public class ActMain extends FeatureActivity  {
 
-    private FragMain mViewFrag;
     private FLocationServices mLocationServices;
 
     private SimpleSource src;
-    private Context mContext;
 
     @Override
     protected void initializeFeatures() {
 
-        mViewFrag = new FragMain();
-        mContext = this;
-
-
         mLocationServices = new FLocationServices() ;
 
         addFeature(mLocationServices);
-
     }
 
 
@@ -50,7 +42,8 @@ public class ActMain extends FeatureActivity  {
 
         if (savedInstanceState == null) {
             getFragmentManager().beginTransaction()
-                    .add(R.id.main_container, mViewFrag)
+                    .add(R.id.upper_container, new FragControls())
+                    .add(R.id.lower_container, new FragMap())
                     .commit();
         }
 
