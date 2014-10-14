@@ -45,6 +45,13 @@ public class FLocationServices extends FGooglePlayServices implements LocationLi
         mGoogleApiClient.connect();
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        if(!mGoogleApiClient.isConnected()) {
+            mGoogleApiClient.connect();
+        }
+    }
 
     public void getLastLocation(){
 

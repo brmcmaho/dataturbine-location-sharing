@@ -132,14 +132,20 @@ public class DTSink {
 
                 for (int i = 0; i < map.NumberOfChannels(); i++) {
 
+                    String name =map.GetName(i);
+                    if(name.startsWith("_")){
+                        Log.d("DTSink", "Skipping metadata channel: "+map.GetName(i));
+                        continue;
+                    }
 
 
 
 
-                    double lat = map.GetData(i)[0];
-                    double lng =map.GetData(i)[1];
+                    double lat = map.GetDataAsFloat64(i)[0];
+                    double lng =map.GetDataAsFloat64(i)[1];
+                    double time = map.GetTimes(i)[0];
 
-                    Log.i("test", "name: "+map.GetName(i)+" lat: "+lat+" long: "+lng);
+                    Log.i("DTSink", "name: "+map.GetName(i)+" lat: "+lat+" long: "+lng+"  time: "+time);
 
                     Location loc = new Location("DT");
                     loc.setLatitude(lat);

@@ -106,7 +106,11 @@ public class DTSource {
         protected String doInBackground(Location... params) {
             double time = System.currentTimeMillis()/1000;
             try {
-                src.put("gps", new double[]{params[0].getLatitude(), params[0].getLongitude()}, time);
+                double[] tuple = new double[]{params[0].getLatitude(), params[0].getLongitude()};
+
+                Log.i("DTSource", "putting: "+ tuple[0]+","+tuple[1]+"   time: "+time);
+
+                src.put("gps",tuple, time);
                 src.flush();
             } catch (SAPIException e) {
                 Log.e("SAPIException", "on data", e);
