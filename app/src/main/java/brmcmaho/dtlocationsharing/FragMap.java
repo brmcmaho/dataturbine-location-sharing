@@ -1,6 +1,7 @@
 package brmcmaho.dtlocationsharing;
 
 import android.app.Fragment;
+import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -11,6 +12,9 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+
+import java.util.ArrayList;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import de.greenrobot.event.EventBus;
 
@@ -93,15 +97,27 @@ public class FragMap extends Fragment {
 
 
 
-    public void onEvent(LocationUpdateEvent event){
+    public void onEventMainThread(RemoteLocationEvent event){
 
-        //get LatLng representation of location
-        LatLng latLng = new LatLng(event.getLocation().getLatitude(), event.getLocation().getLongitude());
+//use CopyOnWriteArrayList because of concurrent access
+            CopyOnWriteArrayList<Location> locArray = new CopyOnWriteArrayList<Location>( event.getLocArray());
 
-        mMap.clear();
-        mMap.addMarker(new MarkerOptions()
-                .position(latLng)
-                .title("My location"));
+                 mMap.clear();
+
+            //Log.i("FragMap", "OnEvent, array length: "+locArray.size());
+            for (Location loc : locArray) {
+                //get LatLng representation of location
+                LatLng latLng = new LatLng(loc.getLatitude(), loc.getLongitude());
+
+                //Log.i("FragMap", "  Location recieved: "+loc.getLatitude()+", "+loc.getLongitude());
+
+
+
+                mMap.addMarker(new MarkerOptions()
+                        .position(latLng)
+                        .title("My location"));
+            }
+
     }
 
 

@@ -12,6 +12,7 @@ import org.actimo.activity.core.FeatureActivity;
 
 import butterknife.OnClick;
 import edu.ucsd.rbnb.simple.MIME;
+import edu.ucsd.rbnb.simple.SimpleSink;
 import edu.ucsd.rbnb.simple.SimpleSource;
 
 
@@ -19,7 +20,8 @@ public class ActMain extends FeatureActivity  {
 
     private FLocationServices mLocationServices;
 
-    private SimpleSource src;
+    private DTSource src;
+    private DTSink sink;
 
     @Override
     protected void initializeFeatures() {
@@ -47,13 +49,25 @@ public class ActMain extends FeatureActivity  {
                     .commit();
         }
 
-        new ConnectToServerTask(this).execute();
+        src = new DTSource(this);
+        src.connect();
+
+        sink = new DTSink(this);
+        sink.connect();
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        src.disconnect();
+        sink.disconnect();
+    }
 
     @OnClick(R.id.get_location_button)
     public void getLocation() {
         mLocationServices.getLastLocation();
+        sink.fetchData();
     }
 
     @OnClick(R.id.get_address_button)
@@ -76,69 +90,7 @@ public class ActMain extends FeatureActivity  {
 
 
 
-    protected class ConnectToServerTask extends AsyncTask<Void, Void, String> {
 
-        Context localContext;
-        public ConnectToServerTask(Context context) {
-            super();
-            localContext = context;
-        }
-
-
-        @Override
-        protected String doInBackground(Void... params) {
-            src = new SimpleSource("LocationTester", "76.176.187.138", 3333);
-            src.setConnectionHandling(false);
-
-            try {
-                src.setArchiveSize(400);
-                src.setCacheSize(10);
-                src.addChannel("gps", MIME.GPS);
-                src.connect();
-                Log.e("test", "connected?");
-            } catch (SAPIException e) {
-                Log.e("SAPIException", "on connect", e);
-            }
-            return "";
-        }
-
-        @Override
-        protected void onPostExecute(String address) {
-
-        }
-    }
-
-
-
-
-
-    protected class SendLocationTask extends AsyncTask<Location, Void, String> {
-
-        Context localContext;
-
-        public SendLocationTask(Context context) {
-            super();
-            localContext = context;
-        }
-
-        @Override
-        protected String doInBackground(Location... params) {
-            double time = System.currentTimeMillis()/1000;
-            try {
-                src.put("gps", new double[]{params[0].getLatitude(), params[0].getLongitude()}, time);
-                src.flush();
-                Log.i("DT", "Putting data: "+params[0].getLatitude()+", " +params[0].getLongitude());
-            } catch (SAPIException e) {
-                Log.e("SAPIException", "on data", e);
-            }
-            return "";
-        }
-
-        @Override
-        protected void onPostExecute(String address) {
-
-        }
-    }
 
 
 

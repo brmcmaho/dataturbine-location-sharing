@@ -48,8 +48,16 @@ public class FLocationServices extends FGooglePlayServices implements LocationLi
 
     public void getLastLocation(){
 
-        //get the last known location (may not be fresh) and post it to the bus
-        postLocationUpdateEvent(LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient));
+        //get the last known location (may not be fresh)
+        Location loc = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+
+
+        if(loc !=null) {
+            //post it to the bus
+            postLocationUpdateEvent(loc);
+        }else{
+            Log.w("FLocationServices", "getLastLocation returned null");
+        }
     }
 
     // no argument request for default LocationRequest
