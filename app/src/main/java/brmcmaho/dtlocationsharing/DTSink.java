@@ -11,10 +11,9 @@ import com.rbnb.sapi.SAPIException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 
 import de.greenrobot.event.EventBus;
-import edu.ucsd.rbnb.simple.MIME;
-import edu.ucsd.rbnb.simple.SimpleSource;
 import edu.ucsd.rbnb.simple.SimpleSubscribeSink;
 
 /**
@@ -60,11 +59,11 @@ public class DTSink {
         mContext = context;
     }
 
-    public void connect() {
-        //run task to connect to DT server in the background
-        new ConnectToServerTask(mContext).execute();
-
-    }
+//    public void connect() {
+//        //run task to connect to DT server in the background
+//        new ConnectToServerTask(mContext).execute();
+//
+//    }
 
     public void disconnect() {
 
@@ -78,18 +77,54 @@ public class DTSink {
 
 
 
-    protected class ConnectToServerTask extends AsyncTask<Void, Void, String> {
+//    protected class ConnectToServerTask extends AsyncTask<Void, Void, String> {
+//
+//        Context localContext;
+//
+//        public ConnectToServerTask(Context context) {
+//            super();
+//            localContext = context;
+//        }
+//
+//
+//        @Override
+//        protected String doInBackground(Void... params) {
+//
+//            try {
+//                //sink auto connects on creation
+//                sink = new SimpleSubscribeSink(NAME, SERVER_IP, PORT);
+//                sink.monitorAll();
+//                sink.subscribeToNewest();
+//
+//
+//            } catch (SAPIException e) {
+//                Log.e("SAPIException", "on connect", e);
+//            }
+//            return "";
+//        }
+//
+//        @Override
+//        protected void onPostExecute(String address) {
+//
+//        }
+//    }
+
+    protected class FetchDataTask extends AsyncTask<Void, Void, HashMap<String, Location>> {
+
+
 
         Context localContext;
 
-        public ConnectToServerTask(Context context) {
+        public FetchDataTask(Context context) {
             super();
             localContext = context;
+
         }
 
 
         @Override
-        protected String doInBackground(Void... params) {
+        protected HashMap<String, Location> doInBackground(Void... params) {
+            HashMap<String, Location> locationMap = new HashMap<String, Location>();
 
             try {
                 //sink auto connects on creation
@@ -101,30 +136,8 @@ public class DTSink {
             } catch (SAPIException e) {
                 Log.e("SAPIException", "on connect", e);
             }
-            return "";
-        }
-
-        @Override
-        protected void onPostExecute(String address) {
-
-        }
-    }
-
-    protected class FetchDataTask extends AsyncTask<Void, Void, String> {
 
 
-        private final ArrayList<Location> locArray;
-        Context localContext;
-
-        public FetchDataTask(Context context) {
-            super();
-            localContext = context;
-            locArray = new ArrayList<Location>();
-        }
-
-
-        @Override
-        protected String doInBackground(Void... params) {
 
             try {
 
@@ -134,10 +147,20 @@ public class DTSink {
 
                     String name =map.GetName(i);
                     if(name.startsWith("_")){
-                        Log.d("DTSink", "Skipping metadata channel: "+map.GetName(i));
+                        Log.v("DTSink", "Skipping metadata channel: " + map.GetName(i));
                         continue;
                     }
 
+//
+//                    for (int d = 0; d < ((map.GetDataAsFloat64(i).length)/2); d = d + 2){
+//
+//                        double lat = map.GetDataAsFloat64(i)[d];
+//                        double lng =map.GetDataAsFloat64(i)[d+1];
+//                        double time = map.GetTimes(i)[d];
+//
+//
+//                        Log.i("DTSink", "Received name: "+map.GetName(i)+" lat: "+lat+" long: "+lng+"  time: "+time);
+//                    }
 
 
 
@@ -145,31 +168,30 @@ public class DTSink {
                     double lng =map.GetDataAsFloat64(i)[1];
                     double time = map.GetTimes(i)[0];
 
-                    Log.i("DTSink", "name: "+map.GetName(i)+" lat: "+lat+" long: "+lng+"  time: "+time);
+                    Log.i("DTSink", "Received location- name: "+map.GetName(i)+" lat: "+lat+" long: "+lng+"  time: "+time);
 
                     Location loc = new Location("DT");
                     loc.setLatitude(lat);
                     loc.setLongitude(lng);
+                    loc.setTime((long)time);
 
-                    locArray.add(loc);
-
-                    postRemoteLocationEvent(locArray);
+                    locationMap.put(name, loc);
 
                 }
 
             } catch (SAPIException e) {
                 Log.e("SAPIException", "on connect", e);
             }
-            return "";
+            return locationMap;
         }
 
         @Override
-        protected void onPostExecute(String s) {
-            postRemoteLocationEvent(locArray);
+        protected void onPostExecute(HashMap<String, Location> locationMap) {
+            postRemoteLocationEvent(locationMap);
         }
     }
 
-    private void postRemoteLocationEvent(ArrayList<Location> locArray) {
+    private void postRemoteLocationEvent(HashMap<String, Location> locArray) {
         EventBus.getDefault().post(new RemoteLocationEvent(locArray));
     }
 
@@ -179,11 +201,11 @@ public class DTSink {
 
 class RemoteLocationEvent {
     Date when = Calendar.getInstance().getTime();
-    private ArrayList<Location> locArray;
+    private HashMap<String, Location> locationMap;
 
-    public RemoteLocationEvent(ArrayList<Location> locArray) {this.locArray = locArray;}
+    public RemoteLocationEvent(HashMap<String, Location> locationMap) {this.locationMap = locationMap;}
 
-    public ArrayList<Location> getLocArray() { return locArray; }
+    public HashMap<String, Location> getLocationMap() { return locationMap; }
 
     public Date getTimestamp() { return when; }
 

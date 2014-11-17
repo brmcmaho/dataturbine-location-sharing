@@ -1,5 +1,7 @@
 package brmcmaho.dtlocationsharing;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.content.Context;
 import android.location.Location;
 import android.os.AsyncTask;
@@ -16,23 +18,27 @@ import edu.ucsd.rbnb.simple.SimpleSource;
  */
 public class DTSource {
 
-    private static final String NAME = "LocationTesterSource";
+
     private static final String SERVER_IP = "76.176.187.138";
     private static final int PORT = 3333;
 
 
 
     private final Context mContext;
+    private final String mName; //name for the source to identify the user
     SimpleSource src;
 
 
-    public DTSource(Context context){
+
+    public DTSource(Context context, String name){
         mContext = context;
+        mName = name;
     }
 
     public void connect(){
         //run task to connect to DT server in the background
         new ConnectToServerTask(mContext).execute();
+
         EventBus.getDefault().register(this);
     }
 
@@ -50,6 +56,7 @@ public class DTSource {
 
 
 
+
     //event handling
     public void onEvent(LocationUpdateEvent event){
         sendLocation(event.getLocation());
@@ -59,9 +66,8 @@ public class DTSource {
 
 
 
-
+    //task to connect to DT server in the background
     protected class ConnectToServerTask extends AsyncTask<Void, Void, String> {
-
 
 
         Context localContext;
@@ -75,7 +81,7 @@ public class DTSource {
         protected String doInBackground(Void... params) {
 
             try {
-                src = new SimpleSource(NAME, SERVER_IP, PORT);
+                src = new SimpleSource(mName, SERVER_IP, PORT);
                 src.setConnectionHandling(false); //prevent source from auto connecting on flush
                 src.setArchiveSize(400);
                 src.setCacheSize(10);
@@ -104,13 +110,21 @@ public class DTSource {
 
         @Override
         protected String doInBackground(Location... params) {
+            //current time in seconds
             double time = System.currentTimeMillis()/1000;
+
             try {
+                //put lat/lng into tuple for DT to consume
                 double[] tuple = new double[]{params[0].getLatitude(), params[0].getLongitude()};
 
-                Log.i("DTSource", "putting: "+ tuple[0]+","+tuple[1]+"   time: "+time);
+                Log.d("DTSource", "Putting- name: "+mName+ " Location:"+ tuple[0]+","+tuple[1]+"  time: "+time);
 
-                src.put("gps",tuple, time);
+                src.put("gps", tuple, time);
+
+                /*NOTE: putting data in an async task like this can result in out of order data,
+                        because tasks don't always finish execution in the order they were started
+                 */
+
                 src.flush();
             } catch (SAPIException e) {
                 Log.e("SAPIException", "on data", e);

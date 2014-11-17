@@ -20,7 +20,7 @@
     <string name="connection_failed">Connection failed</string>
     <string name="disconnected">Client disconnected</string>
     <string name="get_address">Get Address</string>
-    <string name="get_location">Get Location</string>
+    <string name="update_map">Update Map</string>
     <string name="illegal_argument_exception">        Illegal arguments: Latitude %1$.8f Longitude %2$.8f</string>
     <string name="invalid_action">Invalid intent action %1$s</string>
     <string name="invalid_integer_id">Invalid integer request ID: %1$s</string>

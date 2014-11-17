@@ -1,19 +1,12 @@
 package brmcmaho.dtlocationsharing;
 
-import android.content.Context;
-import android.location.Location;
-import android.os.AsyncTask;
+import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.os.Bundle;
-import android.util.Log;
-
-import com.rbnb.sapi.SAPIException;
 
 import org.actimo.activity.core.FeatureActivity;
 
 import butterknife.OnClick;
-import edu.ucsd.rbnb.simple.MIME;
-import edu.ucsd.rbnb.simple.SimpleSink;
-import edu.ucsd.rbnb.simple.SimpleSource;
 
 
 public class ActMain extends FeatureActivity  {
@@ -49,11 +42,11 @@ public class ActMain extends FeatureActivity  {
                     .commit();
         }
 
-        src = new DTSource(this);
+        src = new DTSource(this, getGmailAccount());
         src.connect();
 
         sink = new DTSink(this);
-        sink.connect();
+        //sink.connect();
     }
 
     @Override
@@ -64,8 +57,8 @@ public class ActMain extends FeatureActivity  {
         sink.disconnect();
     }
 
-    @OnClick(R.id.get_location_button)
-    public void getLocation() {
+    @OnClick(R.id.update_map_button)
+    public void updateMap() {
         mLocationServices.getLastLocation();
         sink.fetchData();
     }
@@ -89,8 +82,22 @@ public class ActMain extends FeatureActivity  {
 
 
 
+    //get gmail account to use as user name
+    private String getGmailAccount(){
+        AccountManager manager = (AccountManager) getSystemService(ACCOUNT_SERVICE);
+        Account[] list = manager.getAccounts();
+        String gmail = null;
 
-
+        for(Account account: list)
+        {
+            if(account.type.equalsIgnoreCase("com.google"))
+            {
+                gmail = account.name;
+                break;
+            }
+        }
+        return gmail;
+    }
 
 
 

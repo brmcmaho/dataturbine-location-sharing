@@ -1,8 +1,6 @@
 package brmcmaho.dtlocationsharing;
 
 import android.app.Fragment;
-import android.content.Context;
-import android.location.Location;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -50,9 +48,9 @@ public class FragControls extends Fragment {
 
 
     /*OnClick methods for buttons*/
-    @OnClick(R.id.get_location_button)
+    @OnClick(R.id.update_map_button)
     public void getLocation() {
-        ((ActMain) getActivity()).getLocation();
+        ((ActMain) getActivity()).updateMap();
     }
 
     @OnClick(R.id.get_address_button)

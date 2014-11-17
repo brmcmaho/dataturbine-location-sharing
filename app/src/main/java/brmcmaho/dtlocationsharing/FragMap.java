@@ -13,7 +13,7 @@ import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import de.greenrobot.event.EventBus;
@@ -25,6 +25,8 @@ public class FragMap extends Fragment {
     public MapView mMapView;
     private GoogleMap mMap;
 
+    private HashMap<String, Location> userLocations;
+
 
 
     @Override
@@ -33,6 +35,9 @@ public class FragMap extends Fragment {
         mMapView = (MapView) view.findViewById(R.id.map);
         mMapView.onCreate(savedInstanceState);
         setUpMapIfNeeded();
+
+        //TODO persistence
+        userLocations = new HashMap<String, Location>();
 
 
         return view;
@@ -96,27 +101,64 @@ public class FragMap extends Fragment {
 
 
 
-
+    //event handling
     public void onEventMainThread(RemoteLocationEvent event){
 
-//use CopyOnWriteArrayList because of concurrent access
-            CopyOnWriteArrayList<Location> locArray = new CopyOnWriteArrayList<Location>( event.getLocArray());
+        HashMap<String, Location> remoteLocationMap = event.getLocationMap();
 
-                 mMap.clear();
+        boolean locationsChanged = false; //flag for change to user locations
 
-            //Log.i("FragMap", "OnEvent, array length: "+locArray.size());
-            for (Location loc : locArray) {
-                //get LatLng representation of location
+        //for each user in the location map received from DT
+        for (String key : remoteLocationMap.keySet()){
+
+            //if the location is for a user we are already tracking
+            if(userLocations.containsKey(key)){
+
+                Location remoteLoc = remoteLocationMap.get(key); //new location
+                Location userLoc = userLocations.get(key);  //current stored location
+
+                //if the location has actually changed
+                if(remoteLoc.getLatitude() != userLoc.getLatitude() ||
+                        remoteLoc.getLongitude() != userLoc.getLongitude()){
+
+                    userLocations.put(key, remoteLoc); //update the location
+                    locationsChanged = true; //flag the change
+                }
+
+
+
+             //else add the new user
+            }else{
+                userLocations.put(key, remoteLocationMap.get(key));
+                locationsChanged = true; //flag the change
+            }
+
+        }
+
+        //if we have had an update to user locations
+        if(locationsChanged){
+
+            mMap.clear(); //clear the map to prevent stacking location points
+
+            //for each user we are tracking
+            for(String userName : userLocations.keySet()){
+
+                Location loc = userLocations.get(userName);
                 LatLng latLng = new LatLng(loc.getLatitude(), loc.getLongitude());
 
-                //Log.i("FragMap", "  Location recieved: "+loc.getLatitude()+", "+loc.getLongitude());
+               Log.v("FragMap", "  Updating user location: "+userName+ " to: "+loc.getLatitude()+", "+loc.getLongitude());
 
-
-
+                //add a marker
                 mMap.addMarker(new MarkerOptions()
                         .position(latLng)
-                        .title("My location"));
+                        .title(userName));
+
             }
+
+        }else{
+            Log.v("FragMap", "Received location update from server, but no positions changed");
+        }
+
 
     }
 
@@ -128,26 +170,6 @@ public class FragMap extends Fragment {
 
 
 
-//
-//    private void updateMapMarkers() {
-//
-//        mMap.clear();
-//
-//
-//        // Instantiates a new CircleOptions object and defines the center and radius
-//        mMap.addCircle(new CircleOptions()
-//                .center(mEvent.getLatLng())
-//                .radius(mEvent.getAccuracy())
-//                .strokeColor(Color.RED)
-//                .fillColor(Color.RED & 0x11FFFFFF)
-//                .strokeWidth(1.0f)); // in pixels
-//
-//        mMap.addMarker(new MarkerOptions()
-//                .position(mEvent.getLatLng())
-//                .title(mEvent.getMessage()));
-//
-//
-//    }
 
 
 }
